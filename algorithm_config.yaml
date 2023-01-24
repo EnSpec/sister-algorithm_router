@@ -44,7 +44,7 @@ inputs:
 
     - name: min_pixels
       data_type: number
-      default: 100
+      default: "100"
       description: Minimum pixels
 
     - name: CRID
