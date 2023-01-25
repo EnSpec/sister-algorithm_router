@@ -2,7 +2,10 @@ import json
 import os
 import sys
 from osgeo import gdal
-import maap
+from maap.maap import MAAP
+
+maap = MAAP(maap_host="sister-api.imgspec.org")
+
 
 def main():
 
