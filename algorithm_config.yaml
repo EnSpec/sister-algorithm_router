@@ -17,11 +17,15 @@ disk_space: 50GB
 inputs:
 
   file:
-    - name: frcover_granule
+    - name: l2a_frcover
       description:
       required: True
 
   config:
+    - name: l2a_rfl
+      description:
+      required: True
+
     - name: soil_cover
       data_type: number
       default: '0.5'
