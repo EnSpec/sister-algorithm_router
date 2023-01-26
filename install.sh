@@ -7,3 +7,5 @@ conda install gdal -y
 git clone https://gitlab.com/geospec/maap-py.git
 cd maap-py
 pip install .
+
+wget https://sister-ops-workspace.s3.us-west-2.amazonaws.com/maap.cfg
