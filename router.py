@@ -14,7 +14,7 @@ def main():
     with open(run_config_json, 'r') as in_file:
         run_config =json.load(in_file)
 
-    fc_base_name = os.path.basename(run_config['inputs']['l2b_frcover'])
+    fc_base_name = os.path.basename(run_config['inputs']['l2b_frcov'])
     fc_file = f'input/{fc_base_name}/{fc_base_name}.tif'
 
     # Open fractional cover image
@@ -31,7 +31,7 @@ def main():
             algo_id="sister-trait_estimate",
             version="sister-dev",
             l2a_rfl= run_config['inputs']['l2a_rfl'],
-            l2a_frcover= run_config['inputs']['l2b_frcover'],
+            l2a_frcover= run_config['inputs']['l2b_frcov'],
             veg_cover = run_config['inputs']['veg_cover'],
             CRID= run_config['inputs']['CRID'],
             publish_to_cmr=False,
@@ -46,7 +46,7 @@ def main():
     #         algo_id="sister-grainsize",
     #         version="sister-dev",
     #         l2a_rfl= run_config['inputs']['l2a_rfl'],
-    #         l2a_frcover= run_config['inputs']['l2b_frcover'],
+    #         l2a_frcover= run_config['inputs']['l2b_frcov'],
     #         snow_cover = run_config['inputs']['snow_cover'],
     #         CRID= run_config['inputs']['CRID'],
     #         publish_to_cmr=False,

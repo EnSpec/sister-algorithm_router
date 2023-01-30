@@ -17,7 +17,7 @@ disk_space: 50GB
 inputs:
 
   file:
-    - name: l2a_frcover
+    - name: l2b_frcov
       description:
       required: True
 
