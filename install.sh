@@ -7,3 +7,4 @@ conda install gdal -y
 git clone https://gitlab.com/geospec/maap-py.git -b sister-dev
 cd maap-py
 pip install .
+export MAAP_CONF=${PWD}
