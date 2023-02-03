@@ -1,58 +1,77 @@
+import argparse
 import json
 import os
 import sys
-from osgeo import gdal
-from maap.maap import MAAP
-
-maap = MAAP(maap_host="sister-api.imgspec.org")
-
 
 def main():
 
-    run_config_json = sys.argv[1]
+    agrparse = list()
+    desc = "SISTER Algorithm router"
 
-    with open(run_config_json, 'r') as in_file:
-        run_config =json.load(in_file)
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('--files', nargs='+',
+                        help='Input files')
 
-    fc_base_name = os.path.basename(run_config['inputs']['l2b_frcov'])
-    fc_file = f'input/{fc_base_name}/{fc_base_name}.tif'
+    parser.add_argument('--metadata', nargs='+',
+                        help='Input metadata')
 
-    # Open fractional cover image
-    fc_obj = gdal.Open(fc_file).ReadAsArray()
+    parser.add_argument('--soil_cover', type=float, default = 0.5,
+                        help='Soil cover minimum',)
 
-    snow_mask = fc_obj[3] >= run_config['inputs']['snow_cover']
-    veg_mask = fc_obj[1] >= run_config['inputs']['veg_cover']
+    parser.add_argument('--veg_cover', type=float,  default = 0.5,
+                        help='Vegetation cover minimum',)
+
+    parser.add_argument('--water_cover', type=float,  default = 0.5,
+                        help='Water cover minimum',)
+
+    parser.add_argument('--snow_cover', type=float,  default = 0.5,
+                        help='Snow cover minimum')
+
+    parser.add_argument('--min_pixels', type=float, default = 100,
+                        help='Soil cover minimum')
+
+    args = parser.parse_args()
+
+    for meta_file_path in args.metadata:
+        if "FRCOV" in meta_file_path:
+            break
+
+    with open(meta_file_path, 'r') as meta_file:
+        metadata =json.load(meta_file)
+
+    snow_run = metadata['cover_percentile_counts']['soil'][str(args.snow_cover)] >= args.min_pixels
+
+    veg_run = metadata['cover_percentile_counts']['vegetation'][str(args.veg_cover)] >= args.min_pixels
 
 
-    # Vegetation biochemistry PGE
-    if (veg_mask.sum() >= run_config['inputs']['min_pixels']):
+    # # Vegetation biochemistry PGE
+    if veg_run:
 
-        veg_traits = maap.submitJob(
-            algo_id="sister-trait_estimate",
-            version="sister-dev",
-            l2a_rfl= run_config['inputs']['l2a_rfl'],
-            l2a_frcover= run_config['inputs']['l2b_frcov'],
-            veg_cover = run_config['inputs']['veg_cover'],
-            CRID= run_config['inputs']['CRID'],
-            publish_to_cmr=False,
-            cmr_metadata={},
-            queue="sister-job_worker-16gb",
-            identifier="")
+        vegbiochem_algo ={'algo_id':"sister-trait_estimate",
+                    'l2a_rfl': '',
+                    'l2a_frcover': '',
+                    'veg_cover' : args.veg_cover,
+                    'CRID': '000',
+                    'publish_to_cmr':False,
+                    'cmr_metadata':{},
+                    'queue':"sister-job_worker-16gb",
+                    'identifier':""}
+        print(vegbiochem_algo)
 
     # # Snow grain size PGE
-    # if (snow_mask.sum() >= run_config['inputs']['min_pixels']) & ("DESIS" in fc_base_name):
+    if snow_run  & ("DESIS" not in meta_file_path):
 
-    #     grainsize = maap.submitJob(
-    #         algo_id="sister-grainsize",
-    #         version="sister-dev",
-    #         l2a_rfl= run_config['inputs']['l2a_rfl'],
-    #         l2a_frcover= run_config['inputs']['l2b_frcov'],
-    #         snow_cover = run_config['inputs']['snow_cover'],
-    #         CRID= run_config['inputs']['CRID'],
-    #         publish_to_cmr=False,
-    #         cmr_metadata={},
-    #         queue="sister-job_worker-16gb",
-    #         identifier="")
+        grainsize_algo = {'algo_id':"sister-grainsize",
+                    'version':"sister-dev",
+                    'l2a_rfl': '',
+                    'l2a_frcover': '',
+                    'snow_cover ': args.snow_cover,
+                    'CRID': '000',
+                    'publish_to_cmr':False,
+                    'cmr_metadata':{},
+                    'queue':"sister-job_worker-16gb",
+                    'identifier':""}
+        print(grainsize_algo)
 
 
 
