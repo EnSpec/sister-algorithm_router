@@ -16,7 +16,7 @@ run_command: sister-algorithm_router/run.sh
 disk_space: 2GB
 inputs:
   file:
-    - name: fractional_cover_dataset
+    - name: frcov_dataset
       description:
       required: True
 

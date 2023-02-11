@@ -78,7 +78,7 @@ def run_pges(pges_to_run, maap_host):
     for pge_config in pges_to_run:
         LOGGER.info(f"Submitting PGE with config {json.dumps(pge_config)}")
         job = maap.submitJob(dedup=True, **pge_config)
-        LOGGER.info(f"Submitted job result {json.dumps(job)}")
+        LOGGER.info(f"Submitted job result {job}")
 
 
 def main():
