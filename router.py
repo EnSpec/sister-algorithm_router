@@ -7,6 +7,8 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
+if LOGGER.hasHandlers():
+    LOGGER.handlers.clear()
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 stdout = logging.StreamHandler(sys.stdout)
 stdout.setLevel(logging.DEBUG)
