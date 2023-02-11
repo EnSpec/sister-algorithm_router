@@ -15,12 +15,14 @@ LOGGER.addHandler(stdout)
 
 
 def evaluate(metadata: list, snow_cover, veg_cover, min_pixels, soil_cover, water_cover, **kwargs):
-
+    LOGGER.info("Evaluating router config")
     algorithms = []
     for meta_file_path in metadata:
         if "FRCOV" not in meta_file_path:
-            break
+            LOGGER.warning(f"FRCOV not in {meta_file_path} doing nothing")
+            continue
 
+        LOGGER.info(f"Processing {meta_file_path}")
         with open(meta_file_path, 'r') as meta_file:
             metadata = json.load(meta_file)
 
@@ -29,11 +31,15 @@ def evaluate(metadata: list, snow_cover, veg_cover, min_pixels, soil_cover, wate
 
         # # Vegetation biochemistry PGE
         if veg_run:
+
             vegbiochem_algo = {'algo_id': "sister-trait_estimate",
                                'version': "sister-dev",
                                **kwargs
                                }
+
+            LOGGER.info("Appending config for vegbiochem_algo")
             algorithms.append(vegbiochem_algo)
+            LOGGER.debug(f"{json.dumps(vegbiochem_algo)}")
 
         # # Snow grain size PGE
         if snow_run & ("DESIS" not in meta_file_path):
@@ -42,7 +48,9 @@ def evaluate(metadata: list, snow_cover, veg_cover, min_pixels, soil_cover, wate
                               'snow_cover ': snow_cover,
                               **kwargs
                               }
+            LOGGER.info("Appending config for grainsize_algo")
             algorithms.append(grainsize_algo)
+            LOGGER.debug(f"{json.dumps(grainsize_algo)}")
 
     return algorithms
 
@@ -61,17 +69,19 @@ def route_pge_with_inputs_json(inputs_json):
     for file_obj in files:
         for key, filepath in file_obj.items():
             input_metadata_filepaths.append(get_input_metadata(os.path.basename(filepath)))
-            input_files.update({key:filepath})
-
+            input_files.update({key: filepath})
     algorithms = evaluate(metadata=input_metadata_filepaths, **config, **input_files)
     return algorithms
 
 
 def run_pges(pges_to_run):
+    LOGGER.info(f"Processing {len(pges_to_run)} PGEs to run")
     from maap.maap import MAAP
     maap = MAAP(maap_host="sister-api.imgspec.org")
     for pge_config in pges_to_run:
+        LOGGER.info(f"Submitting PGE with config {json.dumps(pge_config)}")
         job = maap.submitJob(dedup=True, **pge_config)
+        LOGGER.info(f"Submitted job result {json.dumps(job)}")
 
 
 def main():
@@ -112,6 +122,7 @@ def main():
     pge_to_run = []
     if args.inputs_json:
         with open(args.inputs_json, 'r') as fr:
+            LOGGER.info("Using inputs.json")
             inputs_config = json.load(fr)
             pge_to_run = route_pge_with_inputs_json(inputs_config)
     else:
