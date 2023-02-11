@@ -14,11 +14,11 @@ stdout.setFormatter(formatter)
 LOGGER.addHandler(stdout)
 
 
-def evaluate(metadata: list, snow_cover, veg_cover, min_pixels, crid=000):
+def evaluate(metadata: list, snow_cover, veg_cover, min_pixels, soil_cover, water_cover, **kwargs):
 
     algorithms = []
     for meta_file_path in metadata:
-        if "FRCOV" in meta_file_path:
+        if "FRCOV" not in meta_file_path:
             break
 
         with open(meta_file_path, 'r') as meta_file:
@@ -30,35 +30,25 @@ def evaluate(metadata: list, snow_cover, veg_cover, min_pixels, crid=000):
         # # Vegetation biochemistry PGE
         if veg_run:
             vegbiochem_algo = {'algo_id': "sister-trait_estimate",
-                               'reflectance_dataset': '',
-                               'frcover_dataset': '',
-                               'veg_cover': veg_cover,
-                               'crid': crid,
-                               'publish_to_cmr': False,
-                               'cmr_metadata': {},
-                               'queue': "sister-job_worker-16gb",
-                               'identifier': ""}
+                               'version': "sister-dev",
+                               **kwargs
+                               }
             algorithms.append(vegbiochem_algo)
 
         # # Snow grain size PGE
         if snow_run & ("DESIS" not in meta_file_path):
             grainsize_algo = {'algo_id': "sister-grainsize",
                               'version': "sister-dev",
-                              'reflectance_dataset': '',
-                              'frcover_dataset': '',
                               'snow_cover ': snow_cover,
-                              'crid': crid,
-                              'publish_to_cmr': False,
-                              'cmr_metadata': {},
-                              'queue': "sister-job_worker-16gb",
-                              'identifier': ""}
+                              **kwargs
+                              }
             algorithms.append(grainsize_algo)
 
     return algorithms
 
 
 def get_input_metadata(filename):
-    metadata_file = os.path.join(filename, f"{filename}.met.json")
+    metadata_file = os.path.join('input', filename, f"{filename}.met.json")
     if os.path.exists(metadata_file):
         return metadata_file
 
@@ -67,12 +57,13 @@ def route_pge_with_inputs_json(inputs_json):
     config = inputs_json.get("config")
     files = inputs_json.get("file")
     input_metadata_filepaths = []
-    input_files = []
-    for name, filepath in files.items():
-        input_metadata_filepaths.append(get_input_metadata(os.path.basename(filepath)))
-        input_files.append(filepath)
+    input_files = {}
+    for file_obj in files:
+        for key, filepath in file_obj.items():
+            input_metadata_filepaths.append(get_input_metadata(os.path.basename(filepath)))
+            input_files.update({key:filepath})
 
-    algorithms = evaluate(metadata=input_metadata_filepaths, **config)
+    algorithms = evaluate(metadata=input_metadata_filepaths, **config, **input_files)
     return algorithms
 
 
@@ -125,6 +116,7 @@ def main():
             pge_to_run = route_pge_with_inputs_json(inputs_config)
     else:
         pge_to_run = evaluate(metadata=args.metadata, snow_cover=args.snow_cover, veg_cover=args.veg_cover,
+                              soil_cover=args.snow_cover, water_cover=args.water_cover,
                               min_pixels=args.min_pixels, crid=args.crid)
     run_pges(pge_to_run)
 

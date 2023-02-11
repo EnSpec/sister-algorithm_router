@@ -55,3 +55,13 @@ inputs:
       data_type: string
       default: '000'
       description:
+
+    - name: queue
+      data_type: string
+      default: 'sister-job_worker-16gb'
+      description: Queue to run the routed PGE in
+
+    - name: identifier
+      data_type: string
+      default: 'sister-routed-pge'
+      description: id tag for the routed PGE in
