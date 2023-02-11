@@ -5,11 +5,7 @@ import sys
 import logging
 
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-stdout = logging.StreamHandler(sys.stdout)
-stdout.setLevel(logging.DEBUG)
-stdout.setFormatter(formatter)
-logging.basicConfig(handlers=[stdout])
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
 if LOGGER.hasHandlers():
     LOGGER.handlers.clear()
@@ -72,13 +68,13 @@ def route_pge_with_inputs_json(inputs_json):
             input_metadata_filepaths.append(get_input_metadata(os.path.basename(filepath)))
             input_files.update({key: filepath})
     algorithms = evaluate(metadata=input_metadata_filepaths, **config, **input_files)
-    return algorithms
+    return algorithms, config.get("maap_api_host")
 
 
-def run_pges(pges_to_run):
+def run_pges(pges_to_run, maap_host):
     LOGGER.info(f"Processing {len(pges_to_run)} PGEs to run")
     from maap.maap import MAAP
-    maap = MAAP(maap_host="sister-api.imgspec.org")
+    maap = MAAP(maap_host=maap_host)
     for pge_config in pges_to_run:
         LOGGER.info(f"Submitting PGE with config {json.dumps(pge_config)}")
         job = maap.submitJob(dedup=True, **pge_config)
@@ -118,19 +114,22 @@ def main():
     parser.add_argument('--crid', type=str, default='000',
                         help='Composite Release ID',
                         required='--inputs_json' not in sys.argv)
+    parser.add_argument('--maap_api_host', type=str, default='sister-api.imgspec.org',
+                        help='MAAP API HOSTNAME',
+                        required='--inputs_json' not in sys.argv)
 
     args = parser.parse_args()
-    pge_to_run = []
     if args.inputs_json:
         with open(args.inputs_json, 'r') as fr:
             LOGGER.info("Using inputs.json")
             inputs_config = json.load(fr)
-            pge_to_run = route_pge_with_inputs_json(inputs_config)
+            pge_to_run, maap_host = route_pge_with_inputs_json(inputs_config)
+            run_pges(pge_to_run, maap_host=maap_host)
     else:
         pge_to_run = evaluate(metadata=args.metadata, snow_cover=args.snow_cover, veg_cover=args.veg_cover,
                               soil_cover=args.snow_cover, water_cover=args.water_cover,
                               min_pixels=args.min_pixels, crid=args.crid)
-    run_pges(pge_to_run)
+        run_pges(pge_to_run, maap_host=args.maap_api_host)
 
 
 if __name__ == "__main__":

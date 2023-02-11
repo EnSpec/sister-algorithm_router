@@ -21,7 +21,7 @@ inputs:
       required: True
 
   config:
-    - name: reflectance_dataset_name
+    - name: reflectance_dataset
       data_type: string
       default:
       description:
@@ -65,3 +65,8 @@ inputs:
       data_type: string
       default: 'sister-routed-pge'
       description: id tag for the routed PGE in
+
+    - name: maap_api_host
+      data_type: string
+      default: 'sister-api.imgspec.org'
+      description: API Host name
