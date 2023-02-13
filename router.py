@@ -25,12 +25,17 @@ def evaluate(metadata: list, snow_cover, veg_cover, min_pixels, soil_cover, wate
 
         snow_run = metadata['cover_percentile_counts']['soil'][str(snow_cover)] >= min_pixels
         veg_run = metadata['cover_percentile_counts']['vegetation'][str(veg_cover)] >= min_pixels
+        identifier = kwargs.get("routed_pge_identifier")
+        kwargs.pop("routed_pge_identifier")
+        queue = kwargs.get("routed_pge_queue")
+        kwargs.pop("routed_pge_queue")
 
         # # Vegetation biochemistry PGE
         if veg_run:
-
             vegbiochem_algo = {'algo_id': "sister-trait_estimate",
                                'version': "sister-dev",
+                               "identifier": f"{identifier.replace('ROUTER', 'VEGBIOCHEM')}",
+                               "queue": queue,
                                **kwargs
                                }
 
@@ -42,6 +47,8 @@ def evaluate(metadata: list, snow_cover, veg_cover, min_pixels, soil_cover, wate
         if snow_run & ("DESIS" not in meta_file_path):
             grainsize_algo = {'algo_id': "sister-grainsize",
                               'version': "sister-dev",
+                              "identifier": f"{identifier.replace('ROUTER', 'GRAINSIZE')}",
+                              "queue": queue,
                               'snow_cover ': snow_cover,
                               **kwargs
                               }
