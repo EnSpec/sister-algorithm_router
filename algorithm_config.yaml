@@ -68,5 +68,5 @@ inputs:
 
     - name: maap_api_host
       data_type: string
-      default: 'smap-api-int.imgspec.org'
+      default: 'sister-api-int.imgspec.org'
       description: API Host name
