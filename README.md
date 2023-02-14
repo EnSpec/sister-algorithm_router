@@ -29,6 +29,6 @@ This algorithm can be registered using the algorithm_config.yml file found in th
 	maap.register_algorithm_from_yaml_file(file_path= router_alg_yaml)
 
 
-## Example	router_job_response = maap.submitJob(	    algo_id="sister-algorithm-router",	    version="1.0.0",	    frcov_dataset ='SISTER_AVNG_L2B_FRCOVER_20220502T180901_001_OBS',	    reflectance_dataset ='SISTER_AVNG_L2A_CORFL_20220502T180901_001',
+## Example	router_job_response = maap.submitJob(	    algo_id="sister-algorithm_router",	    version="1.0.0",	    frcov_dataset ='SISTER_AVNG_L2B_FRCOVER_20220502T180901_001_OBS',	    reflectance_dataset ='SISTER_AVNG_L2A_CORFL_20220502T180901_001',
 	    crid = '000',
 	    snow_cover = 0.9,	    queue="sister-job_worker-8gb",	    identifier='SISTER_AVNG_L2B_ROUTER_20220502T180901_001')
